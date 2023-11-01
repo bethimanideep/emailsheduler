@@ -1,4 +1,5 @@
 const express = require('express');
+// const { agenda, initializeAgenda } = require('./agenda'); 
 const EmailModel = require('../models/Emaildata');
 const { parse, format } = require('date-fns');
 const { utcToZonedTime } = require('date-fns-tz');
@@ -7,14 +8,6 @@ const { initializeAgenda, agenda } = require('../agenda');
 const { sendEmail } = require('../emailService');
 const router = express.Router();
 
-// Create a nodemailer transporter
-const transporter = nodemailer.createTransport({
-  service: 'Gmail', // Use the email service you prefer
-  auth: {
-    user: process.env.USER_EMAIL, // Your email address
-    pass: process.env.USER_PASS, // Your email password (or an app-specific password)
-  },
-});
 
 router.post('/schedule-email', async (req, res) => {
   try {
@@ -46,10 +39,19 @@ router.post('/schedule-email', async (req, res) => {
       const formattedDate = format(parsedDateWithTimeZone, 'yyyy-MM-dd HH:mm:ss', {
         timeZone,
       });
+      agenda.define('send email', async (job) => {
+        try {
+          // Your email sending logic
+          await sendEmail(dbdata);
+
+          console.log({ message: 'Email Sent successfully' });
+        } catch (error) {
+          console.log('Error sending email:', error);
+        }
+      });
 
       // Schedule the "send email" job at the specified time
       agenda.schedule(formattedDate, 'send email', dbdata);
-      agenda.start();
 
       res.status(201).json({ message: 'Email scheduled successfully' });
     }
