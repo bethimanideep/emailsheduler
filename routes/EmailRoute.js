@@ -49,6 +49,7 @@ router.post('/schedule-email', async (req, res) => {
 
       // Schedule the "send email" job at the specified time
       agenda.schedule(formattedDate, 'send email', dbdata);
+      agenda.start();
 
       res.status(201).json({ message: 'Email scheduled successfully' });
     }
